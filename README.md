@@ -91,9 +91,8 @@ treated, author
 y:this year, >t-:less than days ago, ~:contains, !~:doesn't contain,
 =p:any issues in project, =!p:any issues not in project, !p:no issues in project,
 
-　
-You can specify two or more select option, it affect AND condition.
-　
+**Note:** Multiple filter options for different fields create AND conditions. See the "AND/OR Logic" section below for detailed examples.
+
 If you use this macro in a Issue, you can use the field value of the issue as VALUE by writing to the following field(column) name in the [] (brackets).
 > Besides [<column>], You can use [id], [current_project_id], [current_user], [current_user_id], [<number> days_ago] .
 　
@@ -109,6 +108,44 @@ Sum of specified column for issues.
 -c
 number of issues.
 ```
+
+### AND/OR Logic
+
+Understanding how filters combine is important for creating the right queries:
+
+**AND logic (multiple filter fields):**
+
+When you specify multiple `-f:` options with **different fields**, they are combined with AND logic:
+
+```PowerShell
+{{ref_issues(-f:tracker = Bug, -f:status = New)}}
+```
+
+This finds issues where tracker is "Bug" **AND** status is "New".
+
+**OR logic (pipe separator within one filter):**
+
+Use the pipe `|` separator to create OR conditions **within a single field**:
+
+```PowerShell
+{{ref_issues(-f:tracker = Bug|Feature)}}
+```
+
+This finds issues where tracker is "Bug" **OR** "Feature".
+
+**Limitation with contains operator (`~`):**
+
+When using the contains operator `~` on the **same field multiple times**, you cannot achieve AND logic:
+
+```PowerShell
+# This does NOT work as expected (will not find issues containing BOTH words):
+{{ref_issues(-f:cf_51 ~ oracle, -f:cf_51 ~ linux)}}
+
+# Use pipe for OR instead:
+{{ref_issues(-f:cf_51 ~ oracle|linux)}}
+```
+
+This is a limitation of Redmine's Query system. To search for multiple words in a custom field where ALL words must be present, consider using Redmine's built-in search or a custom query instead.
 
 ### column
 

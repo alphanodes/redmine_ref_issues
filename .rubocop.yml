@@ -4,8 +4,8 @@ plugins:
   - rubocop-minitest
 
 AllCops:
-  TargetRubyVersion: 2.7
-  TargetRailsVersion: 5.2
+  TargetRubyVersion: 3.2
+  TargetRailsVersion: 6.1
   NewCops: enable
   Include:
     - 'Gemfile'
