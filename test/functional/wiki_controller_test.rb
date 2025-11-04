@@ -249,4 +249,45 @@ class WikiControllerTest < RedmineRefIssues::ControllerTest
     assert_response :success
     assert_ref_issues_macro count: 0
   end
+
+  def test_ref_issues_sort_order_ascending
+    prepare_macro_page '{{ref_issues(-f:project_id = 1, id)}}'
+
+    get :show,
+        params: { project_id: 1, id: @page_name, sort: 'id:asc' }
+
+    assert_response :success
+
+    # Extract issue IDs from response in order they appear
+    issue_links = css_select 'table.list.issues tbody tr td.id a'
+    issue_ids = issue_links.map { |link| link.text.to_i }
+
+    # Verify we have issues
+    assert issue_ids.any?, 'Should have found issue IDs in response'
+
+    # Verify they are in ascending order
+    assert_equal issue_ids.sort, issue_ids, 'Issues should be sorted by ID ascending'
+  end
+
+  def test_ref_issues_sort_order_descending
+    prepare_macro_page '{{ref_issues(-f:project_id = 1, id)}}'
+
+    get :show,
+        params: { project_id: 1, id: @page_name, sort: 'id:desc' }
+
+    assert_response :success
+
+    # Extract issue IDs from response in order they appear
+    issue_links = css_select 'table.list.issues tbody tr td.id a'
+    issue_ids = issue_links.map { |link| link.text.to_i }
+
+    # Verify we have issues
+    assert issue_ids.any?, 'Should have found issue IDs in response'
+
+    # Verify they are in descending order
+    expected_order = issue_ids.sort
+    expected_order.reverse!
+
+    assert_equal expected_order, issue_ids, 'Issues should be sorted by ID descending'
+  end
 end

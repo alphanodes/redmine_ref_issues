@@ -10,7 +10,7 @@ Redmine::Plugin.register :redmine_ref_issues do
   url 'https://github.com/alphanodes/redmine_ref_issues'
   author_url 'https://alphanodes.com/'
 
-  requires_redmine version_or_higher: '4.1'
+  requires_redmine version_or_higher: '6.1'
 end
 
 RedminePluginKit::Loader.persisting { loader.load_model_hooks! }

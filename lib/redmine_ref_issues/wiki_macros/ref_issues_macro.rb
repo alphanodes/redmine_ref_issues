@@ -54,9 +54,16 @@ module RedmineRefIssues
             extend QueriesHelper
             extend IssuesHelper
 
-            sort_clear
-            sort_init(@query.sort_criteria.empty? ? [%w[id desc]] : @query.sort_criteria)
-            sort_update @query.sortable_columns
+            if respond_to? :session
+              # Web context: use session-based sorting
+              sort_clear
+              sort_init(@query.sort_criteria.empty? ? [%w[id desc]] : @query.sort_criteria)
+              sort_update @query.sortable_columns
+            else
+              # Mailer context: set sort criteria directly from query without session
+              @sort_criteria = @query.sort_criteria.empty? ? Redmine::SortCriteria.new([%w[id desc]]) : @query.sort_criteria
+              @sortable_columns = @query.sortable_columns
+            end
             # @issue_count_by_group = @query.issue_count_by_group
 
             parser.search_words_s.each do |words|
