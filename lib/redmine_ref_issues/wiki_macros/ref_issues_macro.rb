@@ -125,7 +125,7 @@ module RedmineRefIssues
 
               filter_str = filter_set[:filter] + filter_set[:operator] + filter_set[:values].join('|')
               cr_count = 0
-              msg = +"- failed add_filter: #{filter_str}<br><br>[FILTER]<br>"
+              msg = "- failed add_filter: #{filter_str}<br><br>[FILTER]<br>"
 
               @query.available_filters.each_key do |k|
                 if cr_count >= 5

@@ -32,7 +32,7 @@ class WikiControllerTest < RedmineRefIssues::ControllerTest
   end
 
   def test_ref_issues_with_query_by_name
-    prepare_macro_page '{{ref_issues(-q=Public query for all projects)}}'
+    prepare_macro_page '{{ref_issues(-q=Open issues by priority and tracker)}}'
 
     get :show,
         params: { project_id: 1, id: @page_name }
@@ -42,7 +42,7 @@ class WikiControllerTest < RedmineRefIssues::ControllerTest
   end
 
   def test_ref_issues_with_subject_search
-    prepare_macro_page '{{ref_issues(-f:subject ~ sorting)}}'
+    prepare_macro_page '{{ref_issues(-f:subject ~ recipe)}}'
 
     get :show,
         params: { project_id: 1, id: @page_name }
@@ -52,7 +52,7 @@ class WikiControllerTest < RedmineRefIssues::ControllerTest
   end
 
   def test_ref_issues_with_negation_filter_and_columns
-    prepare_macro_page '{{ref_issues(-f:author_id = 1, -f:status ! New, id)}}'
+    prepare_macro_page '{{ref_issues(-f:author_id = 2, -f:status ! New, id)}}'
 
     get :show,
         params: { project_id: 1, id: @page_name }
@@ -62,7 +62,7 @@ class WikiControllerTest < RedmineRefIssues::ControllerTest
   end
 
   def test_ref_issues_with_columns
-    prepare_macro_page '{{ref_issues(-f:author_id = 1' \
+    prepare_macro_page '{{ref_issues(-f:author_id = 2' \
                        ', project' \
                        ', tracker' \
                        ', parent' \
@@ -223,7 +223,7 @@ class WikiControllerTest < RedmineRefIssues::ControllerTest
   end
 
   def test_multiple_ref_issues_macros
-    prepare_macro_page '{{ref_issues(-i=1)}} and {{ref_issues(-f:subject ~ sorting)}}'
+    prepare_macro_page '{{ref_issues(-i=1)}} and {{ref_issues(-f:subject ~ recipe)}}'
 
     get :show,
         params: { project_id: 1, id: @page_name }
