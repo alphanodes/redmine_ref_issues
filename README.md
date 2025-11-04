@@ -147,6 +147,28 @@ When using the contains operator `~` on the **same field multiple times**, you c
 
 This is a limitation of Redmine's Query system. To search for multiple words in a custom field where ALL words must be present, consider using Redmine's built-in search or a custom query instead.
 
+**OR logic between different fields (Workaround):**
+
+Currently, OR logic between **different fields** is not supported directly in the macro syntax:
+
+```PowerShell
+# This does NOT work (will use AND logic, not OR):
+{{ref_issues(-f:author = [current_user], -f:assigned_to = [current_user])}}
+```
+
+**Workaround using Custom Queries:**
+
+To achieve OR logic between different fields (e.g., "author OR assigned_to"), create a custom query in Redmine's web interface with the desired OR filters, then reference it by name or ID:
+
+```PowerShell
+# Create a custom query in Redmine UI with OR filters, then:
+{{ref_issues(-q=MyOrQuery)}}
+# or
+{{ref_issues(-i=42)}}
+```
+
+This is a limitation of Redmine's Query API which does not support OR conjunctions between different filter fields programmatically.
+
 ### column
 
 You can choose columns that you want to display.
