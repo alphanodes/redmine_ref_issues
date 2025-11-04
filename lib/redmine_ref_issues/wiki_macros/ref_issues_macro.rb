@@ -219,11 +219,55 @@ module RedmineRefIssues
               end
 
               disp = sum.to_s
-            elsif params[:format] == 'pdf'
-              disp = render 'issues/list.html', issues: @issues, query: @query
             else
-              disp = +context_menu.to_s
-              disp << render('issues/list', issues: @issues, query: @query)
+              # Detect mailer context: no controller or no valid request object
+              is_mailer_context = !respond_to?(:controller) || controller.nil? || !respond_to?(:request) || request.nil?
+
+              if params[:format] == 'pdf'
+                # PDF context: render without context menu
+                disp = render 'issues/list.html', issues: @issues, query: @query
+              elsif is_mailer_context
+                # Mailer context: generate simple HTML table directly without Rails helpers
+                # This avoids issues with route helpers (issue_path, etc.) not being available
+                disp = +'<div class="autoscroll">'
+                disp << '<table class="list issues">'
+
+                # Table header
+                disp << '<thead><tr>'
+                @query.inline_columns.each do |column|
+                  disp << "<th class=\"#{ERB::Util.html_escape column.css_classes}\">#{ERB::Util.html_escape column.caption}</th>"
+                end
+                disp << '</tr></thead>'
+
+                # Table body
+                disp << '<tbody>'
+                @issues.each_with_index do |issue, index|
+                  row_class = index.even? ? 'even' : 'odd'
+                  disp << "<tr class=\"#{row_class} #{ERB::Util.html_escape issue.css_classes}\">"
+
+                  @query.inline_columns.each do |column|
+                    # Use Redmine's column value methods - works for all columns including custom fields and plugin columns
+                    value = column.value_object issue
+
+                    # Format the value without HTML (similar to CSV export)
+                    # This works for all column types: standard, custom fields, plugin columns, etc.
+                    formatted_value = if value.is_a? Array
+                                        value.map { |v| format_object(v, html: false) }.join(', ')
+                                      else
+                                        format_object value, html: false
+                                      end
+
+                    disp << "<td class=\"#{ERB::Util.html_escape column.css_classes}\">#{ERB::Util.html_escape formatted_value.to_s}</td>"
+                  end
+
+                  disp << '</tr>'
+                end
+                disp << '</tbody></table></div>'
+              else
+                # Web context: render with context menu
+                disp = +context_menu.to_s
+                disp << render('issues/list', issues: @issues, query: @query)
+              end
             end
 
             disp.html_safe
