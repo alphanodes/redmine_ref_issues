@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module RedmineRefIssues
-  VERSION = '1.0.2'
+  VERSION = '1.0.3'
 
   include RedminePluginKit::PluginBase
 

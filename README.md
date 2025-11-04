@@ -211,6 +211,24 @@ If you do not specify the columns, same columns with customquery are displayed.
     {{ref_issues(-f:subject ~ sorting, -sum:estimated_hours)}}
     ```
 
+15. List overdue issues (due date in the past)
+
+    ```PowerShell
+    {{ref_issues(-f:due_date <t- 0)}}
+    ```
+
+16. List issues due in more than 5 days
+
+    ```PowerShell
+    {{ref_issues(-f:due_date >t+ 5)}}
+    ```
+
+17. List issues due in less than 3 days
+
+    ```PowerShell
+    {{ref_issues(-f:due_date <t+ 3)}}
+    ```
+
 ## Running tests
 
 Make sure you have the latest database structure loaded to the test database:

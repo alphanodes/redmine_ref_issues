@@ -7,3 +7,5 @@ tmp/
 .settings/
 /gitconfig
 Gemfile.lock
+node_modules/
+yarn.lock
