@@ -26,6 +26,15 @@ This is a fork of [redmine_wiki_lists](https://github.com/tkusukawa/redmine_wiki
    bundle install
    ```
 
+   if you have older Redmine version (5.0 - 6.0), use:
+
+      ```shell
+      cd redmine
+      git clone -b stable https://github.com/alphanodes/redmine_ref_issues.git plugins/redmine_ref_issues
+      bundle config set --local without 'development test'
+      bundle install
+      ```
+
 2. Restart your Redmine application server.
 
 ## Usage
