@@ -194,7 +194,7 @@ module RedmineRefIssues
                   raise msg.html_safe
                 end
 
-                disp << ' ' if disp.present?
+                disp.presence&.<<(' ')
 
                 disp << if parser.only_link
                           link_to word.to_s, issue_path(issue)
