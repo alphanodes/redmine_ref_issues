@@ -199,14 +199,15 @@ module RedmineRefIssues
           if db_field == 'subjectdescription'
             value.each do |v|
               sql << ' OR ' if sql != '('
-              sql << "LOWER(#{db_table}.subject) LIKE '%#{self.class.connection.quote_string v.to_s.downcase}%'"
-              sql << " OR LOWER(#{db_table}.description) LIKE '%#{self.class.connection.quote_string v.to_s.downcase}%'"
+              pattern = "'%#{self.class.connection.quote_string v.to_s}%'"
+              sql << "#{Redmine::Database.like "#{db_table}.subject", pattern} " \
+                     "OR #{Redmine::Database.like "#{db_table}.description", pattern}"
             end
           else
             value.each do |v|
               sql << ' OR ' if sql != '('
-              sql << "LOWER(#{RedmineRefIssues.cast_table_field db_table, db_field}) LIKE " \
-                     "'%#{self.class.connection.quote_string v.to_s.downcase}%'"
+              pattern = "'%#{self.class.connection.quote_string v.to_s}%'"
+              sql << Redmine::Database.like(RedmineRefIssues.cast_table_field(db_table, db_field), pattern)
             end
           end
 
