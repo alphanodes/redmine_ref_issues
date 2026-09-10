@@ -9,3 +9,4 @@ tmp/
 Gemfile.lock
 node_modules/
 yarn.lock
+.playwright-mcp/
