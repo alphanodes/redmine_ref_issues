@@ -1,6 +1,6 @@
 # Redmine ref_issues macro
 
-[![Run Rubocop](https://github.com/alphanodes/redmine_ref_issues/workflows/Run%20Rubocop/badge.svg)](https://github.com/alphanodes/redmine_ref_issues/actions?query=workflow%3A%22Run+Rubocop%22) [![Run Brakeman](https://github.com/alphanodes/redmine_ref_issues/workflows/Run%20Brakeman/badge.svg)](https://github.com/alphanodes/redmine_ref_issues/actions?query=workflow%3A%22Run+Brakeman%22) [![Run Tests](https://github.com/alphanodes/redmine_ref_issues/workflows/Tests/badge.svg)](https://github.com/alphanodes/redmine_ref_issues/actions?query=workflow%3ATests)
+[![Run Linters](https://github.com/alphanodes/redmine_ref_issues/actions/workflows/linters.yml/badge.svg?branch=main)](https://github.com/alphanodes/redmine_ref_issues/actions/workflows/linters.yml?query=branch%3Amain) [![Run Tests](https://github.com/alphanodes/redmine_ref_issues/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/alphanodes/redmine_ref_issues/actions/workflows/tests.yml?query=branch%3Amain)
 
 ## Features
 
@@ -12,8 +12,12 @@ This is a fork of [redmine_wiki_lists](https://github.com/tkusukawa/redmine_wiki
 
 ## Requirements
 
-- Redmine `>= 6.1.0`
-- Ruby `>= 3.2`
+| Name              | requirement |
+| ----------------- | ----------- |
+| `Redmine` version | >= 7.0      |
+| `Ruby` version    | >= 3.3      |
+
+> **_NOTE:_** For `Redmine` 6.1 use the `stable` branch of this plugin.
 
 ## Installing
 
@@ -26,7 +30,7 @@ This is a fork of [redmine_wiki_lists](https://github.com/tkusukawa/redmine_wiki
    bundle install
    ```
 
-   if you have older Redmine version (5.0 - 6.0), use:
+   if you have Redmine 6.1, use:
 
       ```shell
       cd redmine
