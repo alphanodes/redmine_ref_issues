@@ -98,3 +98,8 @@ Rails/OutputSafety:
   Enabled: true
   Exclude:
     - lib/redmine_ref_issues/wiki_macros/ref_issues_macro.rb
+
+# Redmine uses `Model.find params[:id]` throughout core; params.expect is not
+# part of the Redmine convention and its autocorrect breaks rescue-based 404s.
+Rails/StrongParametersExpect:
+  Enabled: false
