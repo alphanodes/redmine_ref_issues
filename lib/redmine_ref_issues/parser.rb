@@ -59,7 +59,7 @@ module RedmineRefIssues
 
           @custom_query_id = words
         when 'p'
-          @restrict_project = sep ? Project.find(words) : project
+          @restrict_project = sep ? find_visible_project(words) : project
         when 'f'
           raise "- no additional filter:#{arg}" unless sep
 
@@ -121,17 +121,8 @@ module RedmineRefIssues
         @query = IssueQuery.visible.find_by id: @custom_query_id
         raise "- can not find CustomQuery ID: #{@custom_query_id}" unless @query
       elsif @custom_query_name
-        scope = IssueQuery.where name: @custom_query_name
-        scope = if project
-                  scope.where project_id: nil
-                else
-                  scope.where(project_id: nil).or(scope.where(project_id: project.id))
-                end
-
-        @query = scope.find_by(user_id: User.current.id) ||
-                 scope.find_by(visibility: Query::VISIBILITY_PUBLIC)
-
-        raise "- can not find CustomQuery Name:'#{@custom_query_name}'" unless @query
+        @query = find_query_by_name project
+        raise "- can not find CustomQuery Name:'#{ERB::Util.html_escape @custom_query_name}'" unless @query
       else
         @query = IssueQuery.new name: '_', filters: {}
       end
@@ -174,6 +165,24 @@ module RedmineRefIssues
     end
 
     private
+
+    # A project query takes precedence over a global query with the same name
+    def find_query_by_name(project)
+      scope = IssueQuery.visible.global_or_on_project(project).where name: @custom_query_name
+      scope = scope.order Arel.sql("CASE WHEN #{IssueQuery.table_name}.project_id IS NULL THEN 1 ELSE 0 END")
+      scope.order(:id).first
+    end
+
+    # Unknown and invisible projects raise the same error, so that the macro
+    # does not reveal whether a project identifier exists
+    def find_visible_project(identifier)
+      scope = Project.visible
+      project = scope.find_by identifier: identifier
+      project ||= scope.find_by id: identifier if identifier.match?(/\A\d+\z/)
+      raise "- can not find project:#{ERB::Util.html_escape identifier}" unless project
+
+      project
+    end
 
     def get_column(name)
       name_sym = name.to_sym
@@ -262,6 +271,12 @@ module RedmineRefIssues
       end
     end
 
+    def current_project_id
+      raise "- can not use reference '[current_project_id]' outside of a project." unless @project
+
+      @project.id.to_s
+    end
+
     def words_to_word_array(obj, words)
       words.split('|').collect do |word|
         word.strip!
@@ -272,7 +287,7 @@ module RedmineRefIssues
     def refer_field(obj, word)
       return User.current.id.to_s if word.include? '[current_user_id]'
       return User.current.login if word.include? '[current_user]'
-      return @project.id.to_s if word.include? '[current_project_id]'
+      return current_project_id if word.include? '[current_project_id]'
       return (User.current.today - Regexp.last_match(1).to_i).strftime '%Y-%m-%d' if word =~ /\[(.*)days_ago\]/
 
       if word =~ /\A\[(.*)\]\z/

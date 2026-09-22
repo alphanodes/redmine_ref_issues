@@ -24,6 +24,7 @@ module RedmineRefIssues
       -d[=WORD|WORD...] : description contains one of the words
       -w[=WORD|WORD...] : subject or description contains one of the words
       -i=QUERY_ID : use the saved issue query with this ID
+      -q=NAME : use the saved issue query with this name
       -p[=IDENTIFIER] : restrict to the current project or the given project
       -f:FILTER OPERATOR [VALUE|VALUE...] : additional filter
       -t[=ATTRIBUTE] : show only the formatted text of an attribute (default: subject)

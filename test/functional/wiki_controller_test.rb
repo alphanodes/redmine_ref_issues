@@ -52,6 +52,58 @@ class WikiControllerTest < RedmineRefIssues::ControllerTest
     assert_ref_issues_macro
   end
 
+  def test_ref_issues_with_project_query_by_name
+    prepare_macro_page '{{ref_issues(-q=Multiple custom fields query)}}'
+
+    get :show,
+        params: { project_id: 1, id: @page_name }
+
+    assert_response :success
+    assert_select 'div.flash.error', count: 0
+    assert_ref_issues_macro
+  end
+
+  def test_ref_issues_with_query_by_name_shared_by_role
+    IssueQuery.create! name: 'Shared with managers',
+                       project: @project,
+                       user: users(:users_001),
+                       visibility: Query::VISIBILITY_ROLES,
+                       roles: [roles(:roles_001)],
+                       filters: { 'status_id' => { operator: 'o', values: [''] } }
+    prepare_macro_page '{{ref_issues(-q=Shared with managers)}}'
+
+    get :show,
+        params: { project_id: 1, id: @page_name }
+
+    assert_response :success
+    assert_select 'div.flash.error', count: 0
+    assert_ref_issues_macro
+  end
+
+  def test_ref_issues_with_unknown_restrict_project
+    @request.session[:user_id] = 3
+    prepare_macro_page '{{ref_issues(-p=unknown-project)}}'
+
+    get :show,
+        params: { project_id: 1, id: @page_name }
+
+    assert_response :success
+    assert_select 'div.flash.error', text: /can not find project:unknown-project/
+    assert_ref_issues_macro count: 0
+  end
+
+  def test_ref_issues_with_invisible_restrict_project
+    @request.session[:user_id] = 3
+    prepare_macro_page '{{ref_issues(-p=onlinestore)}}'
+
+    get :show,
+        params: { project_id: 1, id: @page_name }
+
+    assert_response :success
+    assert_select 'div.flash.error', text: /can not find project:onlinestore/
+    assert_ref_issues_macro count: 0
+  end
+
   def test_ref_issues_with_subject_search
     prepare_macro_page '{{ref_issues(-f:subject ~ recipe)}}'
 
