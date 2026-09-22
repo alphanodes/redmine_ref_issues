@@ -161,6 +161,17 @@ class WikiControllerTest < RedmineRefIssues::ControllerTest
     assert_ref_issues_macro
   end
 
+  def test_ref_issues_with_treated_rejects_sql_in_date
+    prepare_macro_page "{{ref_issues(-f:treated jsmith 2017-05-01'OR'1'='1|2017-06-01)}}"
+
+    get :show,
+        params: { project_id: 1, id: @page_name }
+
+    assert_response :success
+    assert_select 'div.flash.error', text: /invalid date/
+    assert_ref_issues_macro count: 0
+  end
+
   def test_ref_issues_with_zero_option
     prepare_macro_page '{{ref_issues(-0,-f:subject = Cannot print recipes2)}}'
 

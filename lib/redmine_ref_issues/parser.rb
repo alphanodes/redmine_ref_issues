@@ -234,9 +234,8 @@ module RedmineRefIssues
           raise '- too many values for treated' if value.length > 2
           raise '- too few values for treated' if value.length < 2
 
-          start_date = value[0]
-          end_date = value[1]
-          if /^\d+$/.match?(operator)
+          start_date, end_date = value.map { |date| RedmineRefIssues.sql_date date }
+          if /\A\d+\z/.match?(operator)
             user = operator
           else
             user_obj = User.find_by login: operator

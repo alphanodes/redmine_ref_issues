@@ -14,6 +14,14 @@ module RedmineRefIssues
       end
     end
 
+    # A date which ends up in the SQL: only a real date is accepted,
+    # anything else would let a macro inject SQL.
+    def sql_date(value)
+      Date.iso8601(value.to_s).iso8601
+    rescue Date::Error
+      raise "- invalid date <#{value}>"
+    end
+
     def additionals_help_items
       [{ title: 'Redmine ref_issues macro',
          url: 'https://github.com/alphanodes/redmine_ref_issues#usage',
