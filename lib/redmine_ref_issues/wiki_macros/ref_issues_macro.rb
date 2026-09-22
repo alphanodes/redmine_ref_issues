@@ -4,7 +4,62 @@ module RedmineRefIssues
   module WikiMacros
     module RefIssuesMacro
       Redmine::WikiFormatting::Macros.register do
-        desc 'Displays a list of referer issues.'
+        desc <<-DESCRIPTION
+    Display a list of issues which refer to the current wiki page or issue.
+
+    Without -s, -d, -w, -f, -i or -q, issues are listed whose subject or
+    description contain the wiki page title (or one of its aliases), the issue
+    subject or, in an issue comment, the issue number (#ID). Only issues visible
+    to the current user are listed, from all projects unless -p or a saved query
+    restricts them. All matching issues are shown, sorted by the sort order of
+    the saved query or by ID descending. Wrong options raise a macro error with
+    usage information.
+
+    Syntax:
+
+      {{ref_issues([OPTION, ...] [, COLUMN, ...])}}
+
+      Options:
+      -s[=WORD|WORD...] : subject contains one of the words
+      -d[=WORD|WORD...] : description contains one of the words
+      -w[=WORD|WORD...] : subject or description contains one of the words
+      -i=QUERY_ID : use the saved issue query with this ID
+      -p[=IDENTIFIER] : restrict to the current project or the given project
+      -f:FILTER OPERATOR [VALUE|VALUE...] : additional filter
+      -t[=ATTRIBUTE] : show only the formatted text of an attribute (default: subject)
+      -l[=ATTRIBUTE] : show only an attribute as link to the issue (default: subject)
+      -c : show only the number of issues
+      -sum=ATTRIBUTE : show only the sum of an attribute
+      -0 : show nothing if no issue matches
+      Without =WORD, -s, -d and -w use the default words described above.
+
+      FILTER: issue query filter (status_id, tracker_id, cf_N, ...) or tracker,
+      category, status, version, project (by name), assigned_to, author (by login).
+      -f:treated USER DATE|DATE lists issues created or commented by USER in
+      this period. OPERATOR as in issue queries (=, !, o, c, ~, >=, <=, ...).
+      VALUE can be [current_user], [current_user_id], [current_project_id],
+      [N days_ago] or, in issues, [ATTRIBUTE] for a value of the issue.
+      ATTRIBUTE: issue attribute (subject, due_date, estimated_hours, ...) or
+      custom field (cf_N or its name).
+      COLUMN: issue query column (subject, status, assigned_to, cf_N, ...).
+
+    Examples:
+
+      {{ref_issues}}
+      ...Issues whose subject or description contain the title of this wiki page
+
+      {{ref_issues(-w, -f:status_id o)}}
+      ...Only the open ones of these issues
+
+      {{ref_issues(-p, -f:tracker = Bug, -f:status_id o, subject, status, assigned_to)}}
+      ...Open bugs of the current project with the given columns
+
+      {{ref_issues(-i=12, -sum=estimated_hours)}}
+      ...Sum of the estimated time of the issues of saved query 12
+
+      {{ref_issues(-s=Release|Deploy, -l, -0)}}
+      ...Links to issues with 'Release' or 'Deploy' in the subject, nothing if none match
+        DESCRIPTION
         macro :ref_issues do |obj, args|
           parser = nil
 
