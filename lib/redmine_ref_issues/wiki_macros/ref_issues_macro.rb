@@ -67,10 +67,11 @@ module RedmineRefIssues
           begin
             parser = RedmineRefIssues::Parser.new obj, args, @project
           rescue StandardError => e
+            raise RedmineRefIssues.unexpected_error(e) unless RedmineRefIssues.expected_error? e
+
             attributes = IssueQuery.available_columns
             msg = <<-TEXT
-      - <br>parameter error: #{e}<br>
-      #{e.backtrace[0]}<br><br>
+      - <br>parameter error: #{ERB::Util.html_escape e.message}<br><br>
       usage: {{ref_issues([option].., [column]..)}}<br>
       <br>[options]<br>
       -i=CustomQueryID : specify custom query by id<br>
@@ -166,7 +167,7 @@ module RedmineRefIssues
                   tgt_objs = []
                   values.each do |value|
                     tgt_obj = models[filter].find_by attributes[filter] => value
-                    raise "- can not resolve '#{ERB::Util.html_escape value}' in #{models[filter]}.#{attributes[filter]} " if tgt_obj.nil?
+                    raise "- can not resolve '#{value}' in #{models[filter]}.#{attributes[filter]} " if tgt_obj.nil?
 
                     tgt_objs << tgt_obj.id.to_s
                   end
@@ -241,13 +242,7 @@ module RedmineRefIssues
                 end
 
                 if word.nil?
-                  msg = +'attributes:'
-
-                  issue.attributes.each do |a|
-                    msg += "#{a}, "
-                  end
-
-                  raise msg.html_safe
+                  raise "- unknown attribute:#{ERB::Util.html_escape atr}<br>attributes: #{issue.attributes.keys.join ', '}".html_safe
                 end
 
                 disp.presence&.<<(' ')
@@ -327,19 +322,12 @@ module RedmineRefIssues
             end
 
             disp.html_safe
-          rescue StandardError, ActiveRecord::RecordInvalid => e
-            # Our own '-' messages already escape their user-supplied parts and
-            # carry intentional <br> markup. Any other (unexpected) error text
-            # is untrusted and must be escaped before being marked html_safe.
-            if e.to_s[0] == '-'
-              msg = +e.to_s
-            else
-              msg = +ERB::Util.html_escape(e.to_s).to_s
-              e.backtrace.each do |backtrace|
-                msg << "<br>#{ERB::Util.html_escape backtrace}"
-              end
-            end
-            raise msg.html_safe
+          rescue StandardError => e
+            # Messages carry macro arguments, so they are escaped here once; messages
+            # built as HTML on purpose (with <br>) are already html_safe and kept.
+            raise ERB::Util.html_escape(e.message) if RedmineRefIssues.expected_error? e
+
+            raise RedmineRefIssues.unexpected_error(e)
           end
         end
       end

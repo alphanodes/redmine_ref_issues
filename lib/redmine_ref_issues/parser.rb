@@ -122,7 +122,7 @@ module RedmineRefIssues
         raise "- can not find CustomQuery ID: #{@custom_query_id}" unless @query
       elsif @custom_query_name
         @query = find_query_by_name project
-        raise "- can not find CustomQuery Name:'#{ERB::Util.html_escape @custom_query_name}'" unless @query
+        raise "- can not find CustomQuery Name:'#{@custom_query_name}'" unless @query
       else
         @query = IssueQuery.new name: '_', filters: {}
       end
@@ -179,7 +179,7 @@ module RedmineRefIssues
       scope = Project.visible
       project = scope.find_by identifier: identifier
       project ||= scope.find_by id: identifier if identifier.match?(/\A\d+\z/)
-      raise "- can not find project:#{ERB::Util.html_escape identifier}" unless project
+      raise "- can not find project:#{identifier}" unless project
 
       project
     end

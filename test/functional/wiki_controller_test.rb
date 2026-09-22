@@ -42,6 +42,28 @@ class WikiControllerTest < RedmineRefIssues::ControllerTest
     assert_includes response.body, '&lt;script&gt;alert(1)&lt;/script&gt;'
   end
 
+  def test_ref_issues_escapes_unknown_option_in_error
+    prepare_macro_page '{{ref_issues(-x<img src=x onerror=alert(1)>)}}'
+
+    get :show,
+        params: { project_id: 1, id: @page_name }
+
+    assert_response :success
+    assert_select 'div.flash.error', text: /unknown option/
+    assert_select 'div.flash.error img', count: 0
+  end
+
+  def test_ref_issues_escapes_unknown_user_in_error
+    prepare_macro_page '{{ref_issues(-f:treated <b>x</b> 2017-05-01|2017-06-01)}}'
+
+    get :show,
+        params: { project_id: 1, id: @page_name }
+
+    assert_response :success
+    assert_select 'div.flash.error', text: /can not find user/
+    assert_select 'div.flash.error b', count: 0
+  end
+
   def test_ref_issues_with_query_by_name
     prepare_macro_page '{{ref_issues(-q=Open issues by priority and tracker)}}'
 
@@ -102,6 +124,53 @@ class WikiControllerTest < RedmineRefIssues::ControllerTest
     assert_response :success
     assert_select 'div.flash.error', text: /can not find project:onlinestore/
     assert_ref_issues_macro count: 0
+  end
+
+  def test_ref_issues_parameter_error_shows_usage_without_backtrace
+    prepare_macro_page '{{ref_issues(-f:subject ~ recipe, unknown_column)}}'
+
+    get :show,
+        params: { project_id: 1, id: @page_name }
+
+    assert_response :success
+    assert_select 'div.flash.error', text: /unknown column:unknown_column.*usage:/m
+    assert_select 'div.flash.error', text: /\.rb:/, count: 0
+  end
+
+  def test_ref_issues_unknown_attribute_lists_names_without_values
+    prepare_macro_page '{{ref_issues(-f:issue_id = 1, -t=unknown_attribute)}}'
+
+    get :show,
+        params: { project_id: 1, id: @page_name }
+
+    assert_response :success
+    assert_select 'div.flash.error', text: /unknown attribute:unknown_attribute.*subject/m
+    assert_select 'div.flash.error', text: /#{issues(:issues_001).subject}/, count: 0
+    # the message is built as HTML on purpose, its line break must not be escaped
+    assert_select 'div.flash.error br'
+  end
+
+  def test_ref_issues_unexpected_error_shows_generic_message_without_backtrace
+    cf = IssueCustomField.create! name: 'Multiple values',
+                                  is_for_all: true,
+                                  tracker_ids: [1, 2, 3],
+                                  field_format: 'list',
+                                  possible_values: %w[A B],
+                                  multiple: true
+    issue = issues :issues_001
+    issue.custom_field_values = { cf.id.to_s => %w[A B] }
+
+    assert_save issue
+
+    # The sum of a multiple value custom field fails with an unexpected NoMethodError
+    prepare_macro_page "{{ref_issues(-f:issue_id = 1, -sum=cf_#{cf.id})}}"
+
+    get :show,
+        params: { project_id: 1, id: @page_name }
+
+    assert_response :success
+    assert_select 'div.flash.error', text: /unexpected error, details are in the log file/
+    assert_select 'div.flash.error', text: /\.rb:|undefined method/, count: 0
   end
 
   def test_ref_issues_with_subject_search

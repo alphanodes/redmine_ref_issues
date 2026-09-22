@@ -22,6 +22,19 @@ module RedmineRefIssues
       raise "- invalid date <#{value}>"
     end
 
+    # Messages of expected macro errors (wrong options, unknown filters, ...)
+    # start with '-' and are shown to the reader.
+    def expected_error?(error)
+      error.to_s.start_with? '-'
+    end
+
+    # Details of any other error (file paths, gem versions, SQL) only go to
+    # the log, the page shows a generic message.
+    def unexpected_error(error)
+      Rails.logger.error "ref_issues macro failed: #{error.class}: #{error.message}\n#{Array(error.backtrace).join "\n"}"
+      'unexpected error, details are in the log file'
+    end
+
     def additionals_help_items
       [{ title: 'Redmine ref_issues macro',
          url: 'https://github.com/alphanodes/redmine_ref_issues#usage',
